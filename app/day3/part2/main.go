@@ -10,6 +10,7 @@ import (
 
 func main() {
 	data := getUncorruptedData()
+	data = removeDont(data)
 	result := getResult(data)
 	fmt.Println(result)
 }
@@ -20,8 +21,26 @@ func getUncorruptedData() []string {
 		panic(err)
 	}
 	corruptedMsg := string(data)
-	r, _ := regexp.Compile("mul[(]{1}[0-9]{1,3},[0-9]{1,3}[)]{1}")
+	r, _ := regexp.Compile("mul[(]{1}[0-9]{1,3},[0-9]{1,3}[)]{1}|don't[(][)]|do[(][)]")
 	return r.FindAllString(corruptedMsg, -1)
+}
+
+func removeDont(data []string) []string {
+	mulList := []string{}
+	isDo := true
+
+	for _, element := range data {
+		if element == "don't()" {
+			isDo = false
+		} else if element == "do()" {
+			isDo = true
+		} else {
+			if isDo {
+				mulList = append(mulList, element)
+			}
+		}
+	}
+	return mulList
 }
 
 func getResult(data []string) int {
